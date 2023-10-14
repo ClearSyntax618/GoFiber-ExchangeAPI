@@ -1,54 +1,31 @@
+/*
+EXERCISE:
+----------------------------------------------------------
+Create a service that gives the latest and historical exchange rate for the currency.
+Please use three tier network architecture in this challenge.
+You can also consider using pub / sub, worker mode to process the request to make it more scalable.
+-----------------------------------------------------------
+*/
+
 package main
 
 import (
-	"encoding/json"
-	"log"
-	"os"
-
+	"github.com/ClearSyntax618/fiber_exchange-rate/router"
 	"github.com/gofiber/fiber/v2"
-	"github.com/joho/godotenv"
 )
 
 func main() {
+	// Inicializando servidor
 	app := fiber.New()
 
-	// Dotenv config
-	_err := godotenv.Load()
+	// Archivos estáticos
+	app.Static("/", "./public/")
+	app.Static("/latest", "./public/latest/")
+	app.Static("/historical", "./public/historical/")
 
-	if _err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	// Rutas
+	router.SetupRoutes(app)
 
-	API_KEY := os.Getenv("APP_ID")
-	url := "https://openexchangerates.org/api/latest.json?app_id=" + API_KEY
-
-	// Get currencies from API
-	app.Get("/", func(c *fiber.Ctx) error {
-		// Starting the request
-		agent := fiber.Get(url)
-		statusCode, body, errs := agent.Bytes()
-
-		if len(errs) > 0 {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"errs": errs,
-			})
-		}
-
-		// Unmarshalling data
-		var coin fiber.Map
-		err := json.Unmarshal(body, &coin)
-
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"err": err,
-			})
-		}
-
-		// Sending JSON data to "/"
-		return c.Status(statusCode).JSON(coin)
-	})
-
-	// Convert currencies (?)
-
+	// Servidor en puerto:
 	app.Listen(":3000")
 }
