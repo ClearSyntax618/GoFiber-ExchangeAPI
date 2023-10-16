@@ -50,7 +50,7 @@ func GetHistorical(c *fiber.Ctx) error {
 		})
 	}
 
-	var res fiber.Map
+	res := make(map[string]interface{})
 	err := json.Unmarshal(body, &res)
 
 	if err != nil {
@@ -60,7 +60,9 @@ func GetHistorical(c *fiber.Ctx) error {
 	}
 
 	// Mostrar response de la API
-	return c.Status(statusCode).JSON(res)
+	return c.Status(statusCode).JSON(&fiber.Map{
+		"rates": res["rates"],
+	})
 }
 
 func GetLatest(c *fiber.Ctx) error {
@@ -70,5 +72,32 @@ func GetLatest(c *fiber.Ctx) error {
 			2. Obtener response de la API.
 			3. Enviar data al front.
 	*/
-	return c.SendString("Hola Mundo!")
+	// Configurar llamada a la API
+	url := "https://openexchangerates.org/api/latest.json?app_id=" + apiKeyCall()
+
+	agent := fiber.Get(url)
+
+	// Obtener response de la API.
+	statusCode, body, errs := agent.Bytes()
+
+	if len(errs) > 0 {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"err": errs,
+		})
+	}
+
+	res := make(map[string]interface{})
+	err := json.Unmarshal(body, &res)
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"err": err,
+		})
+	}
+
+	// Enviar data al front.
+	// Mostrar response de la API
+	return c.Status(statusCode).JSON(&fiber.Map{
+		"rates": res["rates"],
+	})
 }

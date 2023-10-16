@@ -8,7 +8,6 @@ import (
 func SetupRoutes(app *fiber.App) {
 	// Rutas exchange
 	coin := app.Group("/")
+	coin.Get("/", handler.GetLatest)
 	coin.Get("/historical", handler.GetHistorical)
-	coin.Get("/latest", handler.GetLatest)
-
 }

@@ -18,11 +18,6 @@ func main() {
 	// Inicializando servidor
 	app := fiber.New()
 
-	// Archivos estáticos
-	app.Static("/", "./public/")
-	app.Static("/latest", "./public/latest/")
-	app.Static("/historical", "./public/historical/")
-
 	// Rutas
 	router.SetupRoutes(app)
 
